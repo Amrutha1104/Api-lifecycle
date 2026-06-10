@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import mysql.connector
 
 app = Flask(__name__)
 
+# Database Connection
 def get_db_connection():
     return mysql.connector.connect(
         host="localhost",
@@ -13,7 +14,9 @@ def get_db_connection():
 
 @app.route("/", methods=["GET", "POST"])
 def home():
+
     if request.method == "POST":
+
         name = request.form["name"]
         email = request.form["email"]
 
@@ -29,9 +32,28 @@ def home():
         cursor.close()
         conn.close()
 
-        return "Data saved to database successfully!"
+        return "Data saved successfully!"
 
     return render_template("index.html")
+
+
+
+@app.route("/users", methods=["GET"])
+def get_users():
+
+    conn = get_db_connection()
+
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM users")
+
+    users = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify(users)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
